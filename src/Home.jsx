@@ -18,7 +18,6 @@ const Home = () => {
   const userId = JSON.parse(localStorage.getItem("User"))?.id
   const token = localStorage.getItem("Token")
 
-  console.log("user and token", userId, token)
   const filters = { members: { $in: [userId] }, type: "messaging" }
   const options = { presence: true, state: true }
   const sort = { last_message_at: -1 }
