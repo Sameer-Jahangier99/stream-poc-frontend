@@ -58,7 +58,7 @@ const ShareLocationModal: React.FC<ShareLocationModalProps> = (props) => {
 
   return (
     <div className='share-location'>
-      <div>Do you want to share your location in this conversation?</div>
+      <div>{arTranslation["Do you want to share your location in this conversation?"]}</div>
       <div className='share-location-buttons'>
         <button disabled={!latitude || !longitude} onClick={handleYes}>
           Yes
@@ -148,7 +148,7 @@ export function Home() {
     setShareLocation(true);
   };
 
-  const customMessageActions = { 'Share Location': locationHandler };
+  const customMessageActions = { [arTranslation["Share Location"]] : locationHandler };
 
   const i18nInstance = new Streami18n({
     timezone: "Asia/Baghdad",

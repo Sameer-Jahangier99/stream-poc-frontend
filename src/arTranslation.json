@@ -131,5 +131,7 @@
   "{{ watcherCount }} online": "{{ watcherCount }} متصل",
   "{{count}} unread_one": "{{count}} غير مقروءة",
   "{{count}} unread_other": "{{count}} غير مقروءة",
-  "🏙 Attachment...": "🏙 مرفق..."
+  "🏙 Attachment...": "🏙 مرفق...",
+  "Do you want to share your location in this conversation?": "هل ترغب في مشاركة موقعك في هذه المحادثة؟",
+  "Share Location": "مشاركة الموقع"
 }
