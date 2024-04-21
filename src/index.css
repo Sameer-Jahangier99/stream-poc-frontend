@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--grey-whisper);
+  border-radius: 16px;
+  height: 250px;
+  width: 250px;
+}
+
+.map-center {
+  background: var(--primary-color);
+  border-radius: 6px;
+  height: 12px;
+  width: 12px;
+}
+
+.share-location {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: var(--white-snow);
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 99;
+}
+
+.share-location-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+
+.share-location-buttons button {
+  border-radius: 16px;
+  font-size: 16px;
+  width: 80px;
+}

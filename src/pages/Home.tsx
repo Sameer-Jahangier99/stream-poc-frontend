@@ -10,18 +10,146 @@ import {
   ChannelHeader,
   Streami18n,
 } from "stream-chat-react"
-import { ChannelListMessengerProps } from "stream-chat-react/dist/components"
-import { useChatContext } from "stream-chat-react/dist/context"
+import { Attachment, AttachmentProps, ChannelListMessengerProps } from "stream-chat-react/dist/components"
+import { MessageToSend, StreamMessage, useChannelActionContext, useChatContext } from "stream-chat-react/dist/context"
 import { Button } from "../components/Button"
 import { useLoggedInAuth } from "../context/AuthContext"
-import { useEffect, useState } from "react"
 import arTranslation from "../arTranslation.json"
 import "dayjs/locale/ar"
+import GoogleMapReact from 'google-map-react';
+import { useEffect, useState } from "react"
+
+const { VITE_GOOGLE_MAP_API_KEY   }  = import.meta.env 
+const apiKey = VITE_GOOGLE_MAP_API_KEY as string;
+
+type ShareLocationModalProps = {
+  setShareLocation: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const ShareLocationModal: React.FC<ShareLocationModalProps> = (props) => {
+  const { setShareLocation } = props;
+  const { sendMessage } = useChannelActionContext();
+
+  const [latitude, setLatitude] = useState<number>();
+  const [longitude, setLongitude] = useState<number>();
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      setLatitude(position.coords.latitude);
+      setLongitude(position.coords.longitude);
+    });
+  }, []);
+
+  const handleYes = async () => {
+    const messageToSend: MessageToSend = {
+      attachments: [{ type: 'map', latitude, longitude }],
+    };
+
+    try {
+      await sendMessage(messageToSend);
+    } catch (err) {
+      console.log(err);
+    }
+
+    setShareLocation(false);
+  };
+
+  const handleNo = () => setShareLocation(false);
+
+  return (
+    <div className='share-location'>
+      <div>Do you want to share your location in this conversation?</div>
+      <div className='share-location-buttons'>
+        <button disabled={!latitude || !longitude} onClick={handleYes}>
+          Yes
+        </button>
+        <button onClick={handleNo}>No</button>
+      </div>
+    </div>
+  );
+};
+
+type MapCenterProps = {
+  lat: number;
+  lng: number;
+};
+
+const MapCenter: React.FC<MapCenterProps> = () => <div className='map-center' />;
+
+type ExtendedAttachment = {
+  latitude?: number;
+  longitude?: number;
+};
+
+type MapAttachmentProps<ExtendedAttachment> = {
+  mapAttachment: StreamAttachment<ExtendedAttachment>;
+};
+
+const MapAttachment: React.FC<MapAttachmentProps<ExtendedAttachment>> = (props) => {
+  const { mapAttachment } = props;
+  const { latitude, longitude } = mapAttachment;
+
+  if (!latitude || !longitude) {
+    return (
+      <div className='map-loading'>
+        <LoadingIndicator size={30} />
+      </div>
+    );
+  }
+
+  // Construct Google Maps URL
+  const googleMapsURL = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+
+  const center = {
+    lat: latitude,
+    lng: longitude,
+  };
+
+  const handleMapClick = () => {
+    // Open Google Maps in a new tab
+    window.open(googleMapsURL, '_blank');
+  };
+
+  return (
+    <div className='map-container' onClick={handleMapClick}>
+      <GoogleMapReact
+        bootstrapURLKeys={{ key: apiKey }}
+        defaultCenter={center}
+        defaultZoom={11}
+        style={{ height: '250px', width: '250px' }}
+        yesIWantToUseGoogleMapApiInternals
+      >
+        <MapCenter lat={center.lat} lng={center.lng} />
+      </GoogleMapReact>
+    </div>
+  );
+};
+
+
+const CustomAttachment: React.FC<AttachmentProps> = (props) => {
+  const { attachments } = props;
+
+  if (attachments[0]?.type === 'map') {
+    return <MapAttachment mapAttachment={attachments[0]} />;
+  }
+
+  return <Attachment {...props} />;
+};
 
 export function Home() {
   const { user, streamChat } = useLoggedInAuth()
+  const [shareLocation, setShareLocation] = useState<boolean>(false);
+
 
   if (streamChat == null) return <LoadingIndicator />
+  
+
+  const locationHandler = (message: StreamMessage, event: React.BaseSyntheticEvent) => {
+    setShareLocation(true);
+  };
+
+  const customMessageActions = { 'Share Location': locationHandler };
+
   const i18nInstance = new Streami18n({
     timezone: "Asia/Baghdad",
     language: "ar",
@@ -73,10 +201,11 @@ export function Home() {
         sendChannelsToList
         filters={{ members: { $in: [user.id] } }}
       />
-      <Channel>
+      <Channel Attachment={CustomAttachment}>
         <Window>
+           {shareLocation && <ShareLocationModal setShareLocation={setShareLocation} />}
           <ChannelHeader />
-          <MessageList />
+          <MessageList customMessageActions={customMessageActions} />
           <MessageInput />
         </Window>
       </Channel>
