@@ -8,19 +8,66 @@ import {
   MessageInput,
   MessageList,
   ChannelHeader,
+  Streami18n,
 } from "stream-chat-react"
 import { ChannelListMessengerProps } from "stream-chat-react/dist/components"
 import { useChatContext } from "stream-chat-react/dist/context"
 import { Button } from "../components/Button"
 import { useLoggedInAuth } from "../context/AuthContext"
+import { useEffect, useState } from "react"
+import arTranslation from "../arTranslation.json"
+import "dayjs/locale/ar"
 
 export function Home() {
   const { user, streamChat } = useLoggedInAuth()
 
   if (streamChat == null) return <LoadingIndicator />
+  const i18nInstance = new Streami18n({
+    timezone: "Asia/Baghdad",
+    language: "ar",
+    translationsForLanguage: arTranslation,
+    dayjsLocaleConfigForLanguage: {
+      months: [
+        "يناير",
+        "فبراير",
+        "مارس",
+        "أبريل",
+        "مايو",
+        "يونيو",
+        "يوليو",
+        "أغسطس",
+        "سبتمبر",
+        "أكتوبر",
+        "نوفمبر",
+        "ديسمبر",
+      ],
+      monthsShort: [
+        "يناير",
+        "فبراير",
+        "مارس",
+        "أبريل",
+        "مايو",
+        "يونيو",
+        "يوليو",
+        "أغسطس",
+        "سبتمبر",
+        "أكتوبر",
+        "نوفمبر",
+        "ديسمبر",
+      ],
+      calendar: {
+        sameDay: "DD MMMM YYYY",
+        lastDay: "اليوم الأخير",
+        lastWeek: "الأسبوع الماضي",
+        nextDay: "اليوم القادم",
+        nextWeek: "الأسبوع القادم",
+        sameElse: "L",
+      },
+    },
+  })
 
   return (
-    <Chat client={streamChat}>
+    <Chat client={streamChat} i18nInstance={i18nInstance}>
       <ChannelList
         List={Channels}
         sendChannelsToList
@@ -47,7 +94,7 @@ function Channels({ loadedChannels }: ChannelListMessengerProps) {
       <Button onClick={() => navigate("/channel/new")}>New Conversation</Button>
       <hr className="border-gray-500" />
       {loadedChannels != null && loadedChannels.length > 0
-        ? loadedChannels.map(channel => {
+        ? loadedChannels.map((channel) => {
             const isActive = channel === activeChannel
             const extraClasses = isActive
               ? "bg-blue-500 text-white"
